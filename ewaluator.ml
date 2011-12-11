@@ -76,7 +76,8 @@ struct
           | Core.Set -> "set"
           | Core.Define -> "define"
           | Core.Lambda -> "lambda"
-          | Core.Begin -> "begin")
+          | Core.Begin -> "begin"
+          | _ -> "ok")
       in
         match tr with 
         | Core.Builtin b -> Core.TString (untranslate_builtin b)
@@ -84,6 +85,7 @@ struct
         | Core.Label l -> Core.TString l
         | Core.Symbol s -> Core.TString s
         | Core.Lista l -> Core.TList (List.map untranslate l)
+        | _ -> Core.TString "ok?"
             
 
     let env0 = (Core.give_env ())
