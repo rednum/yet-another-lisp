@@ -1,5 +1,6 @@
-module Inpterpreter : INTERPRETER =
+module Interpreter : functor (Eval : EVALUATOR) -> INTERPRETER =
   functor (Eval : EVALUATOR) ->
+    functor (Core : CORE) ->
 struct 
   exception ParsingError
 
@@ -10,23 +11,28 @@ struct
     in
       potnij (lewe_nawiasy (prawe_nawiasy (str)))
 
-  (* type token = TString of string | TList of token list *)
+  (* type token = Core.TString of string | Core.TList of token list *)
 
   let parse (tokens : string list) =
-    let rec pom tokens (TList acc) = 
+    let rec pom tokens (Core.TList acc) = 
       match tokens with 
-        | "(" :: t -> let (tokens_2, acc_2) = pom t (TList []) in pom tokens_2 (TList (acc_2 :: acc))
-        | ")" :: t -> (t, (TList acc))
-        | h :: t -> pom t (TList (TString h :: acc))
-        | _ -> (tokens, TList acc)
+        | "(" :: t -> let (tokens_2, acc_2) = pom t (Core.TList []) in pom tokens_2 (Core.TList (acc_2 :: acc))
+        | ")" :: t -> (t, (Core.TList acc))
+        | h :: t -> pom t (Core.TList (Core.TString h :: acc))
+        | _ -> (tokens, Core.TList acc)
     and rev t = match t with
-      | TString s -> TString s
-      | TList l -> TList (List.rev (List.map rev l))
+      | Core.TString s -> Core.TString s
+      | Core.TList l -> Core.TList (List.rev (List.map rev l))
     in
-    let (_, tokeny) = pom tokens (TList [])
-    in (rev tokeny)
+    let (_, tokeny) = pom tokens (Core.TList [])
+    in match tokeny with
+      | Core.TList [Core.TList t] -> rev (Core.TList t)
+      | tokeny -> (rev tokeny)
 
-  let build_ast (t : string) = Eval.TString "F"
-  let print_result (t : Eval.token) = "f"
+  let build_ast (t : string) = parse (tokenize t)
+  let rec print_result (t : Core.token) = 
+    match t with 
+      | Core.TString s -> s
+      | Core.TList l -> String.concat "" ["("; (String.concat " " (List.map print_result l)); ")"]
   let prompt (t : string) = t
 end

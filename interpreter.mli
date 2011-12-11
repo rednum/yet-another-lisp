@@ -1,8 +1,8 @@
 module type INTERPRETER =
-  functor (Eval : EVALUATOR) ->
+  functor (Core : CORE) ->
    sig 
      val prompt : string -> string
-     val build_ast : string -> Eval.token
-     val print_result : Eval.token -> string
+     val build_ast : string -> Core.token
+     val print_result : Core.token -> string
      exception ParsingError
-   end
+   end;;
