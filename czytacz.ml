@@ -34,5 +34,8 @@ struct
     match t with 
       | Core.TString s -> s
       | Core.TList l -> String.concat "" ["("; (String.concat " " (List.map print_result l)); ")"]
-  let prompt (t : string) = t
+
+  module E = Evaluator (Core)
+  let pseudo_prompt (t : string) = print_result (E.eval_ast (build_ast t))
+  let prompt = pseudo_prompt
 end

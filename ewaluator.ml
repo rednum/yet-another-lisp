@@ -8,7 +8,7 @@ struct
     exception RuntimeError
 
     let add_bindings env vars args = 
-      map2 (fun (Core.Symbol v) a -> Hashtbl.add env v a) vars args;
+      List.map2 (fun (Core.Label v) a -> Hashtbl.add env v a) vars args;
       env
 
     let rec eval (wyrazenie : Core.expr) srodowisko =
@@ -17,15 +17,16 @@ struct
           | Core.Begin -> Core.NotImplemented
           | Core.Lambda -> let (Core.Lista vars :: [body]) = tail in
               Core.Procedure (fun (Core.Lista args) -> eval body (add_bindings srodowisko vars args))
+               (* -> body *)
           | Core.Quote -> (Core.Lista tail)
           | Core.List -> Core.Lista (List.map (fun x -> eval x srodowisko) tail)
           | Core.If -> let (test :: etrue :: [efalse]) = tail in
               (match (eval test srodowisko) with
                  | Core.Number 0 -> (eval etrue srodowisko)
                  | _ -> (eval efalse srodowisko))
-          | Core.Set -> let ((Core.Symbol name) :: [value]) = tail in
+          | Core.Set -> let ((Core.Label name) :: [value]) = tail in
               (Hashtbl.add srodowisko name (eval value srodowisko); Core.Ok)
-          | Core.Define ->  let ((Core.Symbol name) :: [value]) = tail in
+          | Core.Define ->  let ((Core.Label name) :: [value]) = tail in
               (Hashtbl.add srodowisko name (eval value srodowisko); Core.Ok)
           | _ -> Core.NotImplemented
       in
@@ -35,8 +36,10 @@ struct
                 match head with
                   | Core.Builtin b -> (eval_builtin b tail srodowisko)
                       (* No chyba zle \/ :( *)
-                  | Core.Lista l -> eval (Core.Lista ((eval (Core.Lista l) srodowisko)::tail)) srodowisko
-                  | Core.Label l -> Hashtbl.find srodowisko l
+                  | Core.Lista l -> eval (Core.Lista ((eval head srodowisko)::tail)) srodowisko
+                      (* Tutaj MECZ! bo moze byc zmienna tez *)
+                  | Core.Label l -> (let Core.Procedure p = (Hashtbl.find srodowisko l) 
+                                     in p (Core.Lista (List.map (fun t -> eval t srodowisko) tail)))
                   | Core.Procedure p -> (p (Core.Lista tail))
                   | _ -> Core.Ok
               end
@@ -62,8 +65,28 @@ struct
       in
         match tr with 
           | Core.TString t -> translate_one tr
-          | Core.TList l -> Core.Lista (map translate l)
+          | Core.TList l -> Core.Lista (List.map translate l)
 
-    let eval_ast (tr : Core.token) = tr
+    let rec untranslate (tr : Core.expr) = 
+      let untranslate_builtin b =
+        (match b with
+          | Core.Quote -> "quote"
+          | Core.List -> "list" 
+          | Core.If -> "if" 
+          | Core.Set -> "set"
+          | Core.Define -> "define"
+          | Core.Lambda -> "lambda"
+          | Core.Begin -> "begin")
+      in
+        match tr with 
+        | Core.Builtin b -> Core.TString (untranslate_builtin b)
+        | Core.Number n -> Core.TString (string_of_int n)
+        | Core.Label l -> Core.TString l
+        | Core.Symbol s -> Core.TString s
+        | Core.Lista l -> Core.TList (List.map untranslate l)
+            
+
+    let env0 = (Core.give_env ())
+    let eval_ast (tr : Core.token) = untranslate (eval (translate tr) env0)
   end
 ;;
