@@ -1,16 +1,29 @@
-module Evaluator : EVALUATOR =
-  functor (Core : CORE) ->
-struct
+open Core;;
+
+module type EVALUATOR =
+  (* functor (Core : CORE) -> *)
+sig
+  (* type token = TString of string | TList of token list *)
+
+  type token = TString of string | TList of token list
+  val eval_ast : token -> token
+  exception RuntimeError
+end
+
+module Make (Core : CORE) : EVALUATOR
+=
     (* type builtin = Quote | List | If | Set | Define | Lambda | Begin  *)
     (* type expr = Builtin of builtin | Label of string | Lista of expr list | Number of int | Procedure of (expr -> expr) | Symbol of string | NotImplemented | Ok *)
-    (* type token = TString of string | Core.TList of token list *)
-
-    exception RuntimeError
+    (* type token = TString of string | TList of token list *)
+  (* functor (Core : CORE) -> *)
+struct
+  type token = TString of string | TList of token list
+  exception RuntimeError
 
     let add_bindings env vars args = 
       List.map2 (fun (Core.Label v) a -> Hashtbl.add env v a) vars args;
       env
-
+        
     let rec eval (wyrazenie : Core.expr) srodowisko =
       let rec eval_builtin b tail srodowisko = 
         match b with
@@ -48,7 +61,7 @@ struct
           | _ -> wyrazenie
 
     let rec translate tr =
-      let translate_one (Core.TString t) = 
+      let translate_one (TString t) = 
         begin
           match t with 
             | "quote" -> Core.Builtin Core.Quote
@@ -58,14 +71,14 @@ struct
             | "define" -> Core.Builtin Core.Define
             | "lambda" -> Core.Builtin Core.Lambda
             | "begin" -> Core.Builtin Core.Begin
-            | _ -> (if (Str.string_match (regexp "[0-9]") t 0)
+            | _ -> (if (Str.string_match (Str.regexp "[0-9]") t 0)
                     then Core.Number (int_of_string t)
                     else Core.Label t)  (* Jeszcze liczby? *)
         end
       in
         match tr with 
-          | Core.TString t -> translate_one tr
-          | Core.TList l -> Core.Lista (List.map translate l)
+          | TString t -> translate_one tr
+          | TList l -> Core.Lista (List.map translate l)
 
     let rec untranslate (tr : Core.expr) = 
       let untranslate_builtin b =
@@ -80,15 +93,15 @@ struct
           | _ -> "ok")
       in
         match tr with 
-        | Core.Builtin b -> Core.TString (untranslate_builtin b)
-        | Core.Number n -> Core.TString (string_of_int n)
-        | Core.Label l -> Core.TString l
-        | Core.Symbol s -> Core.TString s
-        | Core.Lista l -> Core.TList (List.map untranslate l)
-        | _ -> Core.TString "ok?"
+        | Core.Builtin b -> TString (untranslate_builtin b)
+        | Core.Number n -> TString (string_of_int n)
+        | Core.Label l -> TString l
+        | Core.Symbol s -> TString s
+        | Core.Lista l -> TList (List.map untranslate l)
+        | _ -> TString "ok?"
             
 
     let env0 = (Core.give_env ())
-    let eval_ast (tr : Core.token) = untranslate (eval (translate tr) env0)
+    let eval_ast (tr : token) = untranslate (eval (translate tr) env0)
   end
 ;;
