@@ -1,12 +1,10 @@
-open Core;;
-open Evaluator;;
-open Interpreter;;
+open Core
+open Evaluator
+open Interpreter
 
-module Intt = (Interpreter.Make (Evaluator.Make (Core.Make)));;
-
+module Intt = (Interpreter.Make (Evaluator.Make (Core.Make)))
 
 let reader() = Pervasives.read_line()
-;;
 
 let rec main_loop() =
   Pervasives.print_string "> ";
@@ -22,6 +20,7 @@ let rec main_loop() =
 
   done;
 ;;
+
 try
   main_loop ();
 with 

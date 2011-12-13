@@ -1,9 +1,7 @@
-open Core;;
-open Evaluator;;
+open Core
+open Evaluator
 
 module type INTERPRETER =
-  (* functor (Eval : EVALUATOR) -> *)
-  (*   functor (Core : CORE) -> *)
 sig 
   type token
   val prompt : string -> string
@@ -11,7 +9,6 @@ sig
   val print_result : token -> string
 
   exception ParsingError
-end;;
-
+end
 
 module Make (Evaluator : EVALUATOR) : INTERPRETER

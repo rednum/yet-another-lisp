@@ -5,15 +5,16 @@ all: core.cmo evaluator.cmo interpreter.cmo repl.ml
 
 core.cmo: core.ml core.mli
 	ocamlc -c core.mli
-	ocamlc -w p -c core.ml
+	ocamlc -w up
+ -c core.ml
 
 evaluator.cmo: evaluator.ml evaluator.mli
 	ocamlc -c evaluator.mli
-	ocamlc -w p -c evaluator.ml
+	ocamlc -w up -c evaluator.ml
 
 interpreter.cmo: interpreter.ml interpreter.mli
 	ocamlc -c interpreter.mli
-	ocamlc -w p -c interpreter.ml
+	ocamlc -w up -c interpreter.ml
 
 clean:
 	rm *.cmo *.cmi
