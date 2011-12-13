@@ -5,8 +5,7 @@ all: core.cmo evaluator.cmo interpreter.cmo repl.ml
 
 core.cmo: core.ml core.mli
 	ocamlc -c core.mli
-	ocamlc -w up
- -c core.ml
+	ocamlc -w up -c core.ml
 
 evaluator.cmo: evaluator.ml evaluator.mli
 	ocamlc -c evaluator.mli
