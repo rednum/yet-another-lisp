@@ -27,8 +27,8 @@ struct
         | Core.Label l -> TString l
         | Core.Symbol s -> TString s
         | Core.Lista l -> TList (List.map untranslate l)
-        | Core.Procedure p -> TString "procedura"
-        | Core.NotImplemented -> TString "not implementation"
+        | Core.Procedure p -> TString "<funkcja>"
+        | Core.NotImplemented -> TString "not implemented"
         | Core.Ok -> TString "ok"
 
   let rec print_result (t : token) = 
@@ -54,24 +54,29 @@ struct
       
   let rec eval (wyrazenie : Core.expr) envi =
     let rec eval_builtin b tail envi = 
-      match b with
-        | Core.Begin -> Core.NotImplemented
-        | Core.Lambda ->
-            let (Core.Lista vars :: [body]) = tail in
-            Core.Procedure (fun (Core.Lista args) env 
-                              -> eval body (add_bindings env vars args))
-        | Core.Quote -> (Core.Lista tail)
-        | Core.List -> Core.Lista (List.map (fun x -> eval x envi) tail)
-        | Core.If -> let (test :: etrue :: [efalse]) = tail in
-            (match (eval test envi) with
-               | Core.Lista [] -> (eval efalse envi)
-               | Core.Number 0 -> (eval efalse envi)
-               | _ -> (eval etrue envi))
-        | Core.Set -> 
-            let ((Core.Label name) :: [value]) = tail in
-            (Hashtbl.add envi name (eval value envi); Core.Ok)
-        | Core.Define ->  let ((Core.Label name) :: [value]) = tail in
-            (Hashtbl.add envi name (eval value envi); Core.Ok)
+      match b, tail with
+        | Core.Begin, _ -> List.fold_left (fun _ h -> eval h envi) (Core.Lista []) tail
+        | Core.Lambda, Core.Lista vars :: [body] ->
+            Core.Procedure (fun (Core.Lista args) env -> 
+                              eval body (add_bindings env vars args))
+        | Core.Quote, _ -> (Core.Lista tail)
+        | Core.List, _ -> Core.Lista (List.map (fun x -> eval x envi) tail)
+        | Core.If, (test :: etrue :: [efalse]) -> 
+                   (match (eval test envi) with
+                      | Core.Lista [] -> (eval efalse envi)
+                      | Core.Number 0 -> (eval efalse envi)
+                      | _ -> (eval etrue envi))
+        | Core.Set, (Core.Label name) :: [value] -> 
+            let vall = (eval value envi) 
+            in
+              Hashtbl.add envi name vall; 
+              vall
+        | Core.Define, (Core.Label name) :: [value] ->
+            let vall = (eval value envi) 
+            in
+              Hashtbl.add envi name vall; 
+              vall
+        | _, _ -> raise Core.RuntimeError
     in
       match wyrazenie with 
         | Core.Lista (head :: tail) ->
@@ -93,7 +98,6 @@ struct
                         res
                     end
                 | _ -> wyrazenie
-                (* | l -> l *)
             end
         | Core.Label l -> eval (Hashtbl.find envi l) envi
         | _ -> wyrazenie
