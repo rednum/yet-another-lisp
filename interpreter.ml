@@ -16,24 +16,24 @@ struct
   exception ParsingError
 
   let tokenize str = 
-    let lewe_nawiasy = Str.global_replace (Str.regexp "[ ]*)") " ) "
-    and prawe_nawiasy = Str.global_replace (Str.regexp "[ ]*(") " ( "
-    and potnij = Str.split (Str.regexp "[ \t]+")
+    let lefts = Str.global_replace (Str.regexp "[ ]*)") " ) "
+    and rights = Str.global_replace (Str.regexp "[ ]*(") " ( "
+    and cut = Str.split (Str.regexp "[ \t]+")
     in
-      potnij (lewe_nawiasy (prawe_nawiasy (str)))
+      cut (lefts (rights (str)))
 
   let parse (tokens : string list) =
-    let rec pom tokens (Evaluator.TList acc) = 
+    let rec pom tokens acc = 
       match tokens with 
-        | "(" :: t -> let (tokens_2, acc_2) = pom t (Evaluator.TList []) in pom tokens_2 (Evaluator.TList (acc_2 :: acc))
+        | "(" :: t -> let (tokens_2, acc_2) = pom t [] in pom tokens_2 (acc_2::acc)
         | ")" :: t -> (t, (Evaluator.TList acc))
-        | h :: t -> pom t (Evaluator.TList (Evaluator.TString h :: acc))
+        | h :: t -> pom t (Evaluator.TString h::acc)
         | _ -> (tokens, Evaluator.TList acc)
     and rev t = match t with
       | Evaluator.TString s -> Evaluator.TString s
       | Evaluator.TList l -> Evaluator.TList (List.rev (List.map rev l))
     in
-    let (_, tokeny) = pom tokens (Evaluator.TList [])
+    let (_, tokeny) = pom tokens []
     in match tokeny with
       | Evaluator.TList [Evaluator.TList t] -> rev (Evaluator.TList t)
       | Evaluator.TList [Evaluator.TString s] -> Evaluator.TString s

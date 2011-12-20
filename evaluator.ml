@@ -79,7 +79,7 @@ struct
         | _, _ -> raise Core.RuntimeError
     in
       match wyrazenie with 
-        | Core.Lista (head :: tail) ->
+        | Core.Lista (head::tail) ->
             begin
               match head with
                 | Core.Builtin b -> (eval_builtin b tail envi)
@@ -113,7 +113,7 @@ struct
           | "define" -> Core.Builtin Core.Define
           | "lambda" -> Core.Builtin Core.Lambda
           | "begin" -> Core.Builtin Core.Begin
-          | _ -> (if (Str.string_match (Str.regexp "[0-9]") t 0)
+          | _ -> (if (Str.string_match (Str.regexp "-*[0-9]") t 0)
                   then Core.Number (int_of_string t)
                   else Core.Label t) 
       end

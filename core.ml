@@ -32,6 +32,12 @@ struct
     and podziel = Procedure (fun args _ -> match args with
                               | Lista l -> Number (List.fold_left (fun a (Number h) -> a / h) 1  l)
                               | _ -> raise RuntimeError)
+    and mniejszy = Procedure (fun args _ -> match args with
+                                | Lista (Number a::[Number b]) -> 
+                                    if a < b
+                                    then Symbol "true"
+                                    else Lista []
+                                | _ -> raise RuntimeError)
     and equal = Procedure (fun args _ -> 
                              let rec equal_2 a b =
                                match (a,b) with 
@@ -74,6 +80,7 @@ struct
         Hashtbl.add env "-" odejmij;
         Hashtbl.add env "/" podziel;
         Hashtbl.add env "=" equal;
+        Hashtbl.add env "<" mniejszy;
         Hashtbl.add env "car" car;
         Hashtbl.add env "cdr" cdr;
         Hashtbl.add env "cons" cons;
