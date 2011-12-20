@@ -4,13 +4,11 @@ module type EVALUATOR =
 sig
   type token = TString of string | TList of token list
   val eval_ast : token -> token
-  exception RuntimeError
 end
 
 module Make (Core : CORE) : EVALUATOR =
 struct
   type token = TString of string | TList of token list
-  exception RuntimeError
 
   let rec untranslate (tr : Core.expr) = 
     let untranslate_builtin b =
@@ -21,8 +19,7 @@ struct
          | Core.Set -> "set"
          | Core.Define -> "define"
          | Core.Lambda -> "lambda"
-         | Core.Begin -> "begin"
-         | _ -> "ok")
+         | Core.Begin -> "begin")
     in
       match tr with 
         | Core.Builtin b -> TString (untranslate_builtin b)
@@ -43,10 +40,15 @@ struct
 
 
   let add_bindings env vars args =
+    let add_binding var arg = 
+      match var with
+        | (Core.Label v) -> Hashtbl.add env v arg
+        | _ -> raise Core.RuntimeError
+    in
     print_string "dodaje\n";
     dumpp (Core.Lista vars);
     dumpp (Core.Lista args);
-    ignore (List.map2 (fun (Core.Label v) a -> Hashtbl.add env v a) vars args);
+    ignore (List.map2 add_binding vars args);
     env
 
       
@@ -54,7 +56,8 @@ struct
     let rec eval_builtin b tail envi = 
       match b with
         | Core.Begin -> Core.NotImplemented
-        | Core.Lambda -> let (Core.Lista vars :: [body]) = tail in
+        | Core.Lambda ->
+            let (Core.Lista vars :: [body]) = tail in
             Core.Procedure (fun (Core.Lista args) env 
                               -> eval body (add_bindings env vars args))
         | Core.Quote -> (Core.Lista tail)
@@ -64,11 +67,11 @@ struct
                | Core.Lista [] -> (eval efalse envi)
                | Core.Number 0 -> (eval efalse envi)
                | _ -> (eval etrue envi))
-        | Core.Set -> let ((Core.Label name) :: [value]) = tail in
+        | Core.Set -> 
+            let ((Core.Label name) :: [value]) = tail in
             (Hashtbl.add envi name (eval value envi); Core.Ok)
         | Core.Define ->  let ((Core.Label name) :: [value]) = tail in
             (Hashtbl.add envi name (eval value envi); Core.Ok)
-        | _ -> Core.NotImplemented
     in
       match wyrazenie with 
         | Core.Lista (head :: tail) ->
@@ -93,17 +96,16 @@ struct
                 (* | l -> l *)
             end
         | Core.Label l -> eval (Hashtbl.find envi l) envi
-        (* | Core.Procedure p -> (p (Core.Lista []) envi) *)
         | _ -> wyrazenie
 
   let rec translate tr =
-    let translate_one (TString t) = 
+    let translate_one t = 
       begin
         match t with 
           | "quote" -> Core.Builtin Core.Quote
           | "list" -> Core.Builtin Core.List
           | "if" -> Core.Builtin Core.If
-          | "det" -> Core.Builtin Core.Set
+          | "set" -> Core.Builtin Core.Set
           | "define" -> Core.Builtin Core.Define
           | "lambda" -> Core.Builtin Core.Lambda
           | "begin" -> Core.Builtin Core.Begin
@@ -113,7 +115,7 @@ struct
       end
     in
       match tr with 
-        | TString t -> translate_one tr
+        | TString t -> translate_one t
         | TList l -> Core.Lista (List.map translate l)
 
 

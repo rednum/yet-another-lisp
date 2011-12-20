@@ -4,6 +4,8 @@ sig
   type expr = Builtin of builtin | Label of string | Lista of expr list | Number of int | Procedure of (expr -> (string, expr) Hashtbl.t -> expr) | Symbol of string | NotImplemented | Ok
 
   val give_env : unit -> (string, expr) Hashtbl.t
+
+  exception RuntimeError
 end
 
 module Make : CORE

@@ -9,7 +9,7 @@ core.cmo: core.ml core.mli
 
 evaluator.cmo: evaluator.ml evaluator.mli
 	ocamlc -c evaluator.mli
-	ocamlc -w up -c evaluator.ml
+	ocamlc -c -w up evaluator.ml
 
 interpreter.cmo: interpreter.ml interpreter.mli
 	ocamlc -c interpreter.mli
