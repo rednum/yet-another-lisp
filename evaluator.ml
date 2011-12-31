@@ -52,13 +52,13 @@ struct
     env
 
       
-  let rec eval (wyrazenie : Core.expr) envi =
+  let rec eval (expression : Core.expr) (envi : Core.environment) =
     let rec eval_builtin b tail envi = 
       match b, tail with
         | Core.Begin, _ -> List.fold_left (fun _ h -> eval h envi) (Core.Lista []) tail
         | Core.Lambda, Core.Lista vars :: [body] ->
             Core.Procedure (fun (Core.Lista args) env -> 
-                              eval body (add_bindings env vars args))
+                              eval body (Core.new_scope env vars args))
         | Core.Quote, _ -> (Core.Lista tail)
         | Core.List, _ -> Core.Lista (List.map (fun x -> eval x envi) tail)
         | Core.If, (test :: etrue :: [efalse]) -> 
@@ -68,23 +68,19 @@ struct
                       | _ -> (eval etrue envi))
         | Core.Set, (Core.Label name) :: [value] -> 
             let vall = (eval value envi) 
-            in
-              Hashtbl.add envi name vall; 
-              vall
+            in Core.replace envi name vall
         | Core.Define, (Core.Label name) :: [value] ->
             let vall = (eval value envi) 
-            in
-              Hashtbl.add envi name vall; 
-              vall
+            in Core.add envi name vall;
         | _, _ -> raise Core.RuntimeError
     in
-      match wyrazenie with 
+      match expression with 
         | Core.Lista (head::tail) ->
             begin
               match head with
                 | Core.Builtin b -> (eval_builtin b tail envi)
                 | Core.Lista l -> eval (Core.Lista ((eval head envi)::tail)) envi
-                | Core.Label l -> (let Core.Procedure p = (Hashtbl.find envi l) 
+                | Core.Label l -> (let Core.Procedure p = (Core.find envi l) 
                                    in dumpp (Core.Lista tail); 
                                    let res = p (Core.Lista (List.map (fun t -> eval t envi) tail))
                                      (* let res = p (Core.Lista tail) *)
@@ -97,10 +93,10 @@ struct
                         dumpp res;
                         res
                     end
-                | _ -> wyrazenie
+                | _ -> expression
             end
-        | Core.Label l -> eval (Hashtbl.find envi l) envi
-        | _ -> wyrazenie
+        | Core.Label l -> eval (Core.find envi l) envi
+        | _ -> expression
 
   let rec translate tr =
     let translate_one t = 
