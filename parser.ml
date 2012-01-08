@@ -1,7 +1,7 @@
 open Core
 open Evaluator
 
-module type INTERPRETER =
+module type PARSER =
 sig 
   type token
   val prompt : string -> string
@@ -10,7 +10,7 @@ sig
   exception ParsingError
 end
 
-module Make (Evaluator : EVALUATOR) : INTERPRETER = 
+module Make (Evaluator : EVALUATOR) : PARSER = 
 struct 
   type token = Evaluator.token
   exception ParsingError

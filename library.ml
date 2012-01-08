@@ -37,8 +37,23 @@ struct
          | _ -> raise Core.RuntimeError)
     and mniejszy = Core.Procedure 
       (fun args _ -> match args with
-         | Core.Lista (Core.Number a::[Core.Number b]) -> 
-             if a < b
+         | Core.Lista [Core.Number a] -> Core.Symbol "true"
+         | Core.Lista (Core.Number a::tail) -> 
+             if snd (List.fold_left 
+                       (fun (last, res) (Core.Number next) -> (next, res && (last < next)))
+                       (a, true)
+                       tail)
+             then Core.Symbol "true"
+             else Core.Lista []
+         | _ -> raise Core.RuntimeError)
+    and wiekszy = Core.Procedure 
+      (fun args _ -> match args with
+         | Core.Lista [Core.Number a] -> Core.Symbol "true"
+         | Core.Lista (Core.Number a::tail) -> 
+             if snd (List.fold_left 
+                       (fun (last, res) (Core.Number next) -> (next, res && (last > next)))
+                       (a, true)
+                       tail)
              then Core.Symbol "true"
              else Core.Lista []
          | _ -> raise Core.RuntimeError)
@@ -91,6 +106,7 @@ struct
          "/", podziel;
          "=", equal;
          "<", mniejszy;
+         ">", wiekszy;
          "car", car;
          "cdr", cdr;
          "cons", cons]

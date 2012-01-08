@@ -1,9 +1,9 @@
 open Core
 open Evaluator
-open Interpreter
+open Parser
 module Corr = (Core.Make)
 
-module Intt = (Interpreter.Make (Evaluator.Make (Corr) (Library.Make (Corr))))
+module Pars = (Parser.Make (Evaluator.Make (Corr) (Library.Make (Corr))))
 
 let reader() = Pervasives.read_line()
 
@@ -13,7 +13,7 @@ let rec main_loop() =
 
   while true do
     let wyrazenie = reader() in
-      Pervasives.print_string (Intt.prompt(wyrazenie));
+      Pervasives.print_string (Pars.prompt(wyrazenie));
       (* Pervasives.print_string wyrazenie; *)
       Pervasives.print_string "\n";
       Pervasives.print_string "> ";
