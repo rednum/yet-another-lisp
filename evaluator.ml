@@ -1,12 +1,14 @@
 open Core
+open Library
 
 module type EVALUATOR = 
 sig
   type token = TString of string | TList of token list
+
   val eval_ast : token -> token
 end
 
-module Make (Core : CORE) : EVALUATOR =
+module Make (Core : CORE) (Library : LIBRARY with type expression = Core.expr and type environment = Core.environment) : EVALUATOR =
 struct
   type token = TString of string | TList of token list
 
@@ -119,7 +121,7 @@ struct
         | TList l -> Core.Lista (List.map translate l)
 
 
-  let env0 = (Core.give_env ())
+  let env0 = (Library.create_globals ())
   let eval_ast (tr : token) = untranslate (eval (translate tr) env0)
 end
 

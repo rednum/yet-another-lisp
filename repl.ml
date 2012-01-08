@@ -1,8 +1,9 @@
 open Core
 open Evaluator
 open Interpreter
+module Corr = (Core.Make)
 
-module Intt = (Interpreter.Make (Evaluator.Make (Core.Make)))
+module Intt = (Interpreter.Make (Evaluator.Make (Corr) (Library.Make (Corr))))
 
 let reader() = Pervasives.read_line()
 
