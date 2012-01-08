@@ -1,8 +1,24 @@
-(define fold_left (lambda (fn aq lt) (if lt (fold_left fn (fn aq (car lt)) (cdr lt)) aq)))
-(define map (lambda (f l) (if l (cons (f (car l)) (map f (cdr l))) (list))))
+;; Notacja prefiksowa
+(+ 10 12 20)
+(/ 18 3 2)
 
+(list 2 3 (+ 1 2 3))
+(list 1 (list 1 1) (list 1 1))
+(cdr (list 2 3 5 7))
+(car (list 2 3 5 7))
+(cons 1 ())
+
+;; Funkcje anonimowe
+((lambda (x) (+ x 1)) 7)
+((lambda (x) (list x (/ x 20))) 40)
+
+(define thirty-seven 37)
 (define inc (lambda (x) (+ 1 x)))
 
-(map inc (list 1 2 3 4))
+;; Nieco ciekawsze funkcje
+(define twice (lambda (f x) (f (f x))))
+(twice (lambda (x) (* x (+ 1 x))) 2)
 
-(fold_left (lambda (a b) (if (< 0 b) (+ 1 a) a)) 100 (list -1 2 3 -4 5 6))
+(define naive-length (lambda (l) (if l (quote long!) 0)))
+(define map (lambda (f l) (if l (cons (f (car l)) (map f (cdr l))) (list))))
+(map inc (list 1 2 3 4))

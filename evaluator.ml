@@ -30,8 +30,6 @@ struct
         | Core.Symbol s -> TString s
         | Core.Lista l -> TList (List.map untranslate l)
         | Core.Procedure p -> TString "<funkcja>"
-        | Core.NotImplemented -> TString "not implemented"
-        | Core.Ok -> TString "ok"
 
   let rec print_result (t : token) = 
     match t with 
@@ -60,7 +58,7 @@ struct
         | Core.Lambda, Core.Lista vars :: [body] ->
             Core.Procedure (fun (Core.Lista args) env -> 
                               eval body (Core.new_scope env vars args))
-        | Core.Quote, _ -> (Core.Lista tail)
+        | Core.Quote, _ -> (* (Core.Lista tail) *) List.hd tail
         | Core.List, _ -> Core.Lista (List.map (fun x -> eval x envi) tail)
         | Core.If, (test :: etrue :: [efalse]) -> 
                    (match (eval test envi) with

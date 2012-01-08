@@ -33,7 +33,7 @@ struct
          | _ -> raise Core.RuntimeError)
     and podziel = Core.Procedure 
       (fun args _ -> match args with
-         | Core.Lista l -> Core.Number (List.fold_left (fun a (Core.Number h) -> a / h) 1  l)
+         | Core.Lista ((Core.Number head)::tail) -> Core.Number (List.fold_left (fun a (Core.Number h) -> a / h) head  tail)
          | _ -> raise Core.RuntimeError)
     and mniejszy = Core.Procedure 
       (fun args _ -> match args with
