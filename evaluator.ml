@@ -35,21 +35,6 @@ struct
     match t with 
       | TString s -> s
       | TList l -> String.concat "" ["("; (String.concat " " (List.map print_result l)); ")"]
-
-  (* let dumpp drz = print_string (print_result (untranslate drz)); print_string "\n" *)
-
-  (* let add_bindings env vars args = *)
-  (*   let add_binding var arg =  *)
-  (*     match var with *)
-  (*       | (Core.Label v) -> Hashtbl.add env v arg *)
-  (*       | _ -> raise Core.RuntimeError *)
-  (*   in *)
-  (*   (\* print_string "dodaje do srodowiska..\n"; *\) *)
-  (*   (\* dumpp (Core.Lista vars); *\) *)
-  (*   (\* dumpp (Core.Lista args); *\) *)
-  (*   ignore (List.map2 add_binding vars args); *)
-  (*   env *)
-
       
   let rec eval (expression : Core.expr) (envi : Core.environment) =
     let rec eval_builtin b tail envi = 
@@ -80,16 +65,12 @@ struct
                 | Core.Builtin b -> (eval_builtin b tail envi)
                 | Core.Lista l -> eval (Core.Lista ((eval head envi)::tail)) envi
                 | Core.Label l -> (let Core.Procedure p = (Core.find envi l) 
-                                   in (* dumpp (Core.Lista tail);  *)
-                                   let res = p (Core.Lista (List.map (fun t -> eval t envi) tail))
-                                     (* let res = p (Core.Lista tail) *)
-                                                    envi
-                                     in (* print_string "res: "; dumpp res; *) res)
+                                   in 
+                                   let res = p (Core.Lista (List.map (fun t -> eval t envi) tail)) envi
+                                     in res)
                 | Core.Procedure p -> 
                     begin
-                      (* dumpp (Core.Lista tail); *)
                       let res = (p (Core.Lista tail) envi) in
-                        (* dumpp res; *)
                         res
                     end
                 | _ -> expression
