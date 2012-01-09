@@ -1,24 +1,39 @@
 ;; Notacja prefiksowa
-(+ 10 12 20)
+(+ 10 12)
 (/ 18 3 2)
+(list 1 2 3)
+(- (* 5 10) (+ 2 3 4))
+(+ (+ (+ 1 1) (+ 1 1)) (+ (+ 1 1) (+ 1 1)))
+
+(define sto-piecdziesiat 150)
+(define osiemnascie (* 3 6))
+
+(if 1 (define jedynka 1) 0)
+
 
 
 ;; Dynamicznie typowany
 (list 2 3 (+ 1 2 3))
 (list 1 (list 1 1) (list 1 1))
-(quote (oto lista symboli))
+(list (quote lista) (quote symboli))
 (cdr (list 2 3 5 7))
 (car (list 2 3 5 7))
 (cons 1 ())
+(list (quote zero) 0 ())
 
-;; Funkcje anonimowe
-((lambda (x) (+ x 1)) 7)
-((lambda (x) (list x (/ x 20))) 40)
 
-(define thirty-seven 37)
+
+
+;; Funkcje 
+((lambda (x) (+ x 1)) sto)
+((lambda (x) (list x (/ x 15))) 30)
+
 (define inc (lambda (x) (+ 1 x)))
-(define factorial (lambda (x)                     (if (< x 0)                         (quote positive-argument,please!)                    (begin (define fact (lambda (y) (if (= y 1) 1 (* y (fact (- y 1)))))) (fact x)) )))
+(define factorial (lambda (x) (if (number? x) (if (< x 0) (quote positive-argument,please!) (begin (define fact (lambda (y) (if (= y 1) 1 (* y (fact (- y 1)))))) (fact x))) (quote a-number,please!))))
 (define naive-length (lambda (l) (if l (quote long!) 0)))
+
+
+
 
 ;; Nieco ciekawsze funkcje
 (define twice (lambda (f x) (f (f x))))
