@@ -58,7 +58,7 @@ struct
         | Core.Lambda, Core.Lista vars :: [body] ->
             Core.Procedure (fun (Core.Lista args) env -> 
                               eval body (Core.new_scope env vars args))
-        | Core.Quote, _ -> (* (Core.Lista tail) *) List.hd tail
+        | Core.Quote, ([Core.Label l]) -> Core.Symbol l
         | Core.List, _ -> Core.Lista (List.map (fun x -> eval x envi) tail)
         | Core.If, (test :: etrue :: [efalse]) -> 
                    (match (eval test envi) with

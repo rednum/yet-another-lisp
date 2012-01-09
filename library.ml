@@ -98,7 +98,18 @@ struct
       (fun args _ -> match args with 
          | Core.Lista (head::[Core.Lista tail]) -> Core.Lista (head::tail)
          | _ -> raise Core.RuntimeError)
-      
+    and listp = Core.Procedure
+      (fun args _ -> match args with
+         | Core.Lista [Core.Lista _] -> Core.Symbol "true"
+         | _ -> Core.Lista [])
+    and numberp = Core.Procedure
+      (fun args _ -> match args with
+         | Core.Lista [Core.Number _] -> Core.Symbol "true"
+         | _ -> Core.Lista [])      
+    and symbolp = Core.Procedure
+      (fun args _ -> match args with
+         | Core.Lista [Core.Symbol _] -> Core.Symbol "true"
+         | _ -> Core.Lista [])      
     in let builtins = 
         ["+", dodaj;
          "*", pomnoz;
@@ -109,7 +120,10 @@ struct
          ">", wiekszy;
          "car", car;
          "cdr", cdr;
-         "cons", cons]
+         "cons", cons;
+         "list?", listp;
+         "number?", numberp;
+         "symbol?", symbolp]
     in begin
         ignore (List.map (fun (name, func) -> Core.add env name func) builtins);
         env
